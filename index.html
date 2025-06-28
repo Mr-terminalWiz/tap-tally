@@ -7,7 +7,7 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon-192.png" type="image/png" />
   <meta name="theme-color" content="#0072ff" />
-   <style>
+  <style>
     body {
       margin: 0;
       padding: 0;
@@ -93,20 +93,42 @@
       transform: scale(1.1);
     }
 
-    .btn-reset {
-      margin-top: 25px;
-      background: linear-gradient(to right, #ff416c, #ff4b2b);
-      color: #fff;
+    .extra-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .btn-reset,
+    .btn-save,
+    .btn-toggle {
       border: none;
-      padding: 10px 25px;
-      font-size: 1rem;
+      padding: 10px 20px;
+      font-size: 0.95rem;
       border-radius: 20px;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       transition: transform 0.2s;
     }
 
-    .btn-reset:hover {
+    .btn-reset {
+      background: linear-gradient(to right, #ff416c, #ff4b2b);
+    }
+
+    .btn-save {
+      background: linear-gradient(to right, #00c853, #64dd17);
+    }
+
+    .btn-toggle {
+      background: linear-gradient(to right, #ffc107, #ff9800);
+    }
+
+    .btn-reset:hover,
+    .btn-save:hover,
+    .btn-toggle:hover {
       transform: scale(1.05);
     }
 
@@ -139,9 +161,9 @@
         font-size: 1.3rem;
       }
 
-      .btn-reset {
-        font-size: 0.95rem;
-        padding: 8px 20px;
+      .btn-reset, .btn-save, .btn-toggle {
+        font-size: 0.9rem;
+        padding: 8px 16px;
       }
 
       .count-section h1 {
@@ -157,16 +179,22 @@
 <body>
 
   <header class="app-header">
-    <img src="tap tally.png" alt="TapTally Logo" class="logo-img" />
+    <img src="your-logo.png" alt="TapTally Logo" class="logo-img" />
   </header>
 
   <div class="counter-container">
     <div class="count-section">
       <h1 id="count">0</h1>
     </div>
-    <button class="count-btn" onclick="increaseCount()">Tap</button>
-    <br />
-    <button class="btn-reset" onclick="resetCount()">Reset</button>
+
+    <button class="count-btn" onclick="increaseCount()">+1</button>
+
+    <div class="extra-buttons">
+      <button class="btn-reset" onclick="resetCount()">Reset</button>
+      <button class="btn-save" onclick="saveCurrentCount()">Save</button>
+      <button class="btn-toggle" onclick="toggleVibration()">Vibration: <span id="vibe-status">On</span></button>
+    </div>
+
     <div class="history" id="history">
       <p>Saved Counts:</p>
     </div>
@@ -175,25 +203,34 @@
   <script>
     let count = parseInt(localStorage.getItem('counter')) || 0;
     let savedCounts = JSON.parse(localStorage.getItem('savedCounts')) || [];
+    let vibrationOn = JSON.parse(localStorage.getItem('vibrationOn')) ?? true;
+
     document.getElementById('count').textContent = count;
+    document.getElementById("vibe-status").textContent = vibrationOn ? "On" : "Off";
     displaySavedCounts();
 
     function increaseCount() {
       count++;
       updateDisplay();
       localStorage.setItem('counter', count);
-      if (navigator.vibrate) navigator.vibrate([100]);
+      vibrate([100]);
     }
 
     function resetCount() {
       count = 0;
       updateDisplay();
       localStorage.setItem('counter', count);
-      if (navigator.vibrate) navigator.vibrate([200]);
+      vibrate([200]);
     }
 
-    function updateDisplay() {
-      document.getElementById('count').textContent = count;
+    function saveCurrentCount() {
+      if (!savedCounts.includes(count)) {
+        savedCounts.unshift(count);
+        savedCounts = savedCounts.slice(0, 2);
+        localStorage.setItem('savedCounts', JSON.stringify(savedCounts));
+        displaySavedCounts();
+        vibrate([200]);
+      }
     }
 
     function displaySavedCounts() {
@@ -206,17 +243,33 @@
           count = val;
           updateDisplay();
           localStorage.setItem('counter', count);
-          if (navigator.vibrate) navigator.vibrate([100]);
+          vibrate([100]);
         };
         historyDiv.appendChild(span);
       });
     }
 
-    // PWA Service Worker registration
+    function updateDisplay() {
+      document.getElementById('count').textContent = count;
+    }
+
+    function toggleVibration() {
+      vibrationOn = !vibrationOn;
+      localStorage.setItem('vibrationOn', vibrationOn);
+      document.getElementById("vibe-status").textContent = vibrationOn ? "On" : "Off";
+    }
+
+    function vibrate(ms) {
+      if (vibrationOn && navigator.vibrate) {
+        navigator.vibrate(ms);
+      }
+    }
+
+    // Register service worker
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("service-worker.js")
-        .then(reg => console.log("Service Worker registered ✅"))
-        .catch(err => console.error("Service Worker failed:", err));
+        .then(() => console.log("Service Worker Registered ✅"))
+        .catch(err => console.error("Service Worker Error:", err));
     }
   </script>
 
