@@ -93,65 +93,21 @@
       transform: scale(1.1);
     }
 
-    .extra-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 12px;
+    .btn-reset {
       margin-top: 20px;
-    }
-
-    .btn-reset,
-    .btn-save,
-    .btn-toggle {
       border: none;
-      padding: 10px 20px;
-      font-size: 0.95rem;
+      padding: 10px 25px;
+      font-size: 1rem;
       border-radius: 20px;
       cursor: pointer;
       color: #fff;
+      background: linear-gradient(to right, #ff416c, #ff4b2b);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       transition: transform 0.2s;
     }
 
-    .btn-reset {
-      background: linear-gradient(to right, #ff416c, #ff4b2b);
-    }
-
-    .btn-save {
-      background: linear-gradient(to right, #00c853, #64dd17);
-    }
-
-    .btn-toggle {
-      background: linear-gradient(to right, #ffc107, #ff9800);
-    }
-
-    .btn-reset:hover,
-    .btn-save:hover,
-    .btn-toggle:hover {
+    .btn-reset:hover {
       transform: scale(1.05);
-    }
-
-    .history {
-      margin-top: 25px;
-    }
-
-    .history p {
-      margin-bottom: 8px;
-    }
-
-    .history span {
-      display: inline-block;
-      background: rgba(255, 255, 255, 0.2);
-      padding: 10px 20px;
-      border-radius: 12px;
-      margin: 5px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .history span:hover {
-      background: rgba(255, 255, 255, 0.35);
     }
 
     @media (max-width: 500px) {
@@ -161,9 +117,9 @@
         font-size: 1.3rem;
       }
 
-      .btn-reset, .btn-save, .btn-toggle {
+      .btn-reset {
         font-size: 0.9rem;
-        padding: 8px 16px;
+        padding: 8px 20px;
       }
 
       .count-section h1 {
@@ -189,86 +145,41 @@
 
     <button class="count-btn" onclick="increaseCount()">+1</button>
 
-    <div class="extra-buttons">
-      <button class="btn-reset" onclick="resetCount()">Reset</button>
-      <button class="btn-save" onclick="saveCurrentCount()">Save</button>
-      <button class="btn-toggle" onclick="toggleVibration()">Vibration: <span id="vibe-status">On</span></button>
-    </div>
-
-    <div class="history" id="history">
-      <p>Saved Counts:</p>
-    </div>
+    <br>
+    <button class="btn-reset" onclick="resetCount()">Reset</button>
   </div>
 
   <script>
     let count = parseInt(localStorage.getItem('counter')) || 0;
-    let savedCounts = JSON.parse(localStorage.getItem('savedCounts')) || [];
-    let vibrationOn = JSON.parse(localStorage.getItem('vibrationOn')) ?? true;
-
     document.getElementById('count').textContent = count;
-    document.getElementById("vibe-status").textContent = vibrationOn ? "On" : "Off";
-    displaySavedCounts();
 
     function increaseCount() {
       count++;
       updateDisplay();
       localStorage.setItem('counter', count);
-      vibrate([100]);
+      vibrate(60);
     }
 
     function resetCount() {
       count = 0;
       updateDisplay();
       localStorage.setItem('counter', count);
-      vibrate([200]);
-    }
-
-    function saveCurrentCount() {
-      if (!savedCounts.includes(count)) {
-        savedCounts.unshift(count);
-        savedCounts = savedCounts.slice(0, 2);
-        localStorage.setItem('savedCounts', JSON.stringify(savedCounts));
-        displaySavedCounts();
-        vibrate([200]);
-      }
-    }
-
-    function displaySavedCounts() {
-      const historyDiv = document.getElementById('history');
-      historyDiv.innerHTML = '<p>Saved Counts:</p>';
-      savedCounts.forEach(val => {
-        const span = document.createElement('span');
-        span.textContent = val;
-        span.onclick = () => {
-          count = val;
-          updateDisplay();
-          localStorage.setItem('counter', count);
-          vibrate([100]);
-        };
-        historyDiv.appendChild(span);
-      });
+      vibrate(120);
     }
 
     function updateDisplay() {
       document.getElementById('count').textContent = count;
     }
 
-    function toggleVibration() {
-      vibrationOn = !vibrationOn;
-      localStorage.setItem('vibrationOn', vibrationOn);
-      document.getElementById("vibe-status").textContent = vibrationOn ? "On" : "Off";
-    }
-
     function vibrate(ms) {
-      if (vibrationOn && navigator.vibrate) {
+      if (navigator.vibrate) {
         navigator.vibrate(ms);
       }
     }
 
-    // Register service worker
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("service-worker.js")
-        .then(() => console.log("Service Worker Registered ✅"))
+        .then(() => console.log("✅ Service Worker Registered"))
         .catch(err => console.error("Service Worker Error:", err));
     }
   </script>
