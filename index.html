@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TapTally</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon-192.png" type="image/png" />
+  <meta name="theme-color" content="#0072ff" />
+   <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(120deg, #1a2a6c, #b21f1f, #fdbb2d);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow-x: hidden;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .app-header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 10px 0;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+
+    .logo-img {
+      max-width: 180px;
+      height: auto;
+      filter: drop-shadow(0px 3px 5px rgba(0, 0, 0, 0.3));
+    }
+
+    .counter-container {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px);
+      border-radius: 25px;
+      padding: 40px 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      color: #fff;
+      width: 90%;
+      max-width: 400px;
+      margin-top: 100px;
+    }
+
+    .count-section {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px 0;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .count-section h1 {
+      font-size: 4.5rem;
+      margin: 0;
+      font-weight: bold;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .count-btn {
+      width: 140px;
+      height: 140px;
+      background: linear-gradient(to right, #00c6ff, #0072ff);
+      color: #fff;
+      font-size: 1.6rem;
+      font-weight: bold;
+      border-radius: 50%;
+      border: none;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .count-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .btn-reset {
+      margin-top: 25px;
+      background: linear-gradient(to right, #ff416c, #ff4b2b);
+      color: #fff;
+      border: none;
+      padding: 10px 25px;
+      font-size: 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s;
+    }
+
+    .btn-reset:hover {
+      transform: scale(1.05);
+    }
+
+    .history {
+      margin-top: 25px;
+    }
+
+    .history p {
+      margin-bottom: 8px;
+    }
+
+    .history span {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 10px 20px;
+      border-radius: 12px;
+      margin: 5px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .history span:hover {
+      background: rgba(255, 255, 255, 0.35);
+    }
+
+    @media (max-width: 500px) {
+      .count-btn {
+        width: 110px;
+        height: 110px;
+        font-size: 1.3rem;
+      }
+
+      .btn-reset {
+        font-size: 0.95rem;
+        padding: 8px 20px;
+      }
+
+      .count-section h1 {
+        font-size: 3.5rem;
+      }
+
+      .logo-img {
+        max-width: 140px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <img src="tap tally.png" alt="TapTally Logo" class="logo-img" />
+  </header>
+
+  <div class="counter-container">
+    <div class="count-section">
+      <h1 id="count">0</h1>
+    </div>
+    <button class="count-btn" onclick="increaseCount()">Tap</button>
+    <br />
+    <button class="btn-reset" onclick="resetCount()">Reset</button>
+    <div class="history" id="history">
+      <p>Saved Counts:</p>
+    </div>
+  </div>
+
+  <script>
+    let count = parseInt(localStorage.getItem('counter')) || 0;
+    let savedCounts = JSON.parse(localStorage.getItem('savedCounts')) || [];
+    document.getElementById('count').textContent = count;
+    displaySavedCounts();
+
+    function increaseCount() {
+      count++;
+      updateDisplay();
+      localStorage.setItem('counter', count);
+      if (navigator.vibrate) navigator.vibrate([100]);
+    }
+
+    function resetCount() {
+      count = 0;
+      updateDisplay();
+      localStorage.setItem('counter', count);
+      if (navigator.vibrate) navigator.vibrate([200]);
+    }
+
+    function updateDisplay() {
+      document.getElementById('count').textContent = count;
+    }
+
+    function displaySavedCounts() {
+      const historyDiv = document.getElementById('history');
+      historyDiv.innerHTML = '<p>Saved Counts:</p>';
+      savedCounts.forEach(val => {
+        const span = document.createElement('span');
+        span.textContent = val;
+        span.onclick = () => {
+          count = val;
+          updateDisplay();
+          localStorage.setItem('counter', count);
+          if (navigator.vibrate) navigator.vibrate([100]);
+        };
+        historyDiv.appendChild(span);
+      });
+    }
+
+    // PWA Service Worker registration
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js")
+        .then(reg => console.log("Service Worker registered ✅"))
+        .catch(err => console.error("Service Worker failed:", err));
+    }
+  </script>
+
+</body>
+</html>
